@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"strconv"
 
@@ -13,9 +12,8 @@ import (
 var db *sql.DB
 
 func init() {
-	var err error
 
-	cfg, err := config.LoadConfig()
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal("Error loading config:", err)
 	}
@@ -23,7 +21,6 @@ func init() {
 		"@" + cfg.DBHost + ":" + strconv.Itoa(cfg.DBPort) +
 		"/" + cfg.DBName + "?sslmode=disable"
 
-	fmt.Println(dbURL)
 	db, err = sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal(err)
