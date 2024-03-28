@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"strconv"
 
@@ -13,24 +14,40 @@ type Config struct {
 	DBHost     string
 	DBPort     int
 	DBName     string
+	APPPort    int
 }
 
-func LoadConfig() (Config, error) {
+func Load() (Config, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
-		return Config{}, err
+		return Config{}, errors.New("error loading .env: " + err.Error())
 	}
 
-	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	dbPortStr := os.Getenv("DB_PORT")
+	dbPort, err := strconv.Atoi(dbPortStr)
 	if err != nil {
-		return Config{}, err
+		return Config{}, errors.New("DB_PORT value error: " + err.Error())
+	}
+
+	appPortStr := os.Getenv("APP_PORT")
+	appPort, err := strconv.Atoi(appPortStr)
+	if err != nil {
+		return Config{}, errors.New("APP_PORT value error: " + err.Error())
 	}
 
 	return Config{
-		DBUsername: os.Getenv("DB_USERNAME"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBHost:     os.Getenv("DB_HOST"),
-		DBPort:     port,
-		DBName:     os.Getenv("DB_NAME"),
+		DBUsername: getEnv("DB_USERNAME", ""),
+		DBPassword: getEnv("DB_PASSWORD", ""),
+		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBPort:     dbPort,
+		DBName:     getEnv("DB_NAME", ""),
+		APPPort:    appPort,
 	}, nil
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

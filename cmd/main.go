@@ -1,17 +1,23 @@
 package main
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gotired/golang_backend/config"
 	"github.com/gotired/golang_backend/routes"
 )
 
 func main() {
-	// Create a new Fiber instance
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal("Error loading config:", err)
+	}
+
 	app := fiber.New()
 
-	// Setup routes
 	routes.SetupUserRoutes(app)
 
-	// Start the server on port 3000
-	app.Listen(":3000")
+	app.Listen(":" + strconv.Itoa(cfg.APPPort))
 }
