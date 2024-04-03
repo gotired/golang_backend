@@ -1,15 +1,17 @@
 package database
 
 import (
-	"database/sql"
 	"log"
 	"strconv"
 
+	"gorm.io/driver/postgres"
+
 	"github.com/gotired/golang_backend/config"
 	_ "github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
-var db *sql.DB
+var db *gorm.DB
 
 func init() {
 
@@ -17,23 +19,26 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading config:", err)
 	}
-	dbURL := "postgres://" + cfg.DBUsername + ":" + cfg.DBPassword +
-		"@" + cfg.DBHost + ":" + strconv.Itoa(cfg.DBPort) +
-		"/" + cfg.DBName + "?sslmode=disable"
-
-	db, err = sql.Open("postgres", dbURL)
+	dsn := "host=" + cfg.DBHost + " user=" + cfg.DBUsername + " password=" + cfg.DBPassword + " dbname=" + cfg.DBName + " port=" + strconv.Itoa(cfg.DBPort) + " sslmode=disable TimeZone=Asia/Bangkok"
+	dbConnection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		panic("failed to connect database")
 	}
+	db = dbConnection
+
 }
 
-func GetDB() *sql.DB {
+func GetDB() *gorm.DB {
 	return db
 }
 
 func CloseDB() error {
 	if db != nil {
-		return db.Close()
+		sqlDB, err := db.DB()
+		if err != nil {
+			return err
+		}
+		return sqlDB.Close()
 	}
 	return nil
 }
