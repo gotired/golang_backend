@@ -7,22 +7,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/gotired/golang_backend/database"
 	"github.com/gotired/golang_backend/models"
-	service "github.com/gotired/golang_backend/services"
+	"github.com/gotired/golang_backend/services"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
-
-// type User interface {
-// 	List(c *fiber.Ctx) error
-// 	Register(c *fiber.Ctx) error
-// 	Login(c *fiber.Ctx) error
-// }
 
 type UserStruct struct {
 }
 
 func (u *UserStruct) List(c *fiber.Ctx) error {
-	users, err := service.GetAllUsers()
+	users, err := services.GetAllUsers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/List"))
@@ -47,12 +41,12 @@ func (u *UserStruct) Register(c *fiber.Ctx) error {
 	db := database.GetDB()
 
 	var existingUser models.User
-	if err := db.Where("email = ?", requestBody.Email).First(&existingUser).Error; err == nil {
+	if err := db.Where("email = ? AND user_name = ?", requestBody.Email, requestBody.Username).First(&existingUser).Error; err == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(
 			Failure{}.Detail("Email is already registered", "handlers/user/Register"))
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		// If an unexpected error occurred during the query, return it
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(
+			Failure{}.Detail(err.Error(), "handlers/user/Register"))
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(requestBody.Password), bcrypt.DefaultCost)
@@ -87,6 +81,5 @@ func (u *UserStruct) Login(c *fiber.Ctx) error {
 			Failure{}.Detail(err.Error(), "handlers/user/Login"))
 	}
 
-	// Passwords match, login successful
-	return c.SendString("Login successful!")
+	return c.JSON(Success{}.Detail("Login successful!"))
 }
