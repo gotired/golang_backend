@@ -1,21 +1,27 @@
 package models
 
-type UserDetail struct {
-	ID        string `json:"id" gorm:"primaryKey"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+type UserBase struct {
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
 	Phone     string `json:"num"`
-	Email     string `json:"email"`
+}
+
+type UserDetail struct {
+	UserBase
+	ID string `json:"id" gorm:"primaryKey"`
 }
 
 type UserRegister struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Username  string `json:"user_name"`
-	Password  string `json:"password"`
-	Confirm   string `json:"confirm"`
-	Phone     string `json:"num"`
+	UserBase
+	Username string `json:"user_name" validate:"required"`
+	Password string `json:"password" validate:"required,min=6"`
+	Confirm  string `json:"confirm" validate:"required,eqfield=Password"`
+}
+
+type UserLogin struct {
+	Identifier string `json:"identifier" validate:"required"`
+	Password   string `json:"password" validate:"required"`
 }
 
 var users []UserDetail
