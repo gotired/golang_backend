@@ -12,10 +12,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
+// type User interface {
+// 	List(c *fiber.Ctx) error
+// 	Register(c *fiber.Ctx) error
+// 	Login(c *fiber.Ctx) error
+// }
+
+type UserStruct struct {
 }
 
-func (u *User) List(c *fiber.Ctx) error {
+func (u *UserStruct) List(c *fiber.Ctx) error {
 	users, err := service.GetAllUsers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(
@@ -27,7 +33,7 @@ func (u *User) List(c *fiber.Ctx) error {
 	return c.JSON(Success{}.Data(users))
 }
 
-func (u *User) Register(c *fiber.Ctx) error {
+func (u *UserStruct) Register(c *fiber.Ctx) error {
 	var requestBody models.UserRegister
 	if err := c.BodyParser(&requestBody); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(
@@ -61,4 +67,26 @@ func (u *User) Register(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(Success{}.Detail("User registered successfully!"))
+}
+
+func (u *UserStruct) Login(c *fiber.Ctx) error {
+	var loginData models.UserLogin
+	if err := c.BodyParser(&loginData); err != nil {
+		return err
+	}
+
+	db := database.GetDB()
+
+	var user models.UserRegister
+	if err := db.Where("user_name = ? OR email = ?", loginData.Identifier, loginData.Identifier).First(&user).Error; err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(
+			Failure{}.Detail(err.Error(), "handlers/user/Login"))
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(
+			Failure{}.Detail(err.Error(), "handlers/user/Login"))
+	}
+
+	// Passwords match, login successful
+	return c.SendString("Login successful!")
 }
