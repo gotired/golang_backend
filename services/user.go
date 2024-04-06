@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"github.com/gotired/golang_backend/database"
@@ -9,7 +9,7 @@ func GetAllUsers() ([]models.UserDetail, error) {
 	var users []models.UserDetail
 	db := database.GetDB()
 
-	if err := db.Table("users").Select("users.*").
+	if err := db.Table("users").Select("*").
 		Find(&users).Error; err != nil {
 		return nil, err
 	}
