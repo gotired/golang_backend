@@ -7,6 +7,7 @@ import (
 	"gorm.io/driver/postgres"
 
 	"github.com/gotired/golang_backend/config"
+	Table "github.com/gotired/golang_backend/models/table"
 	_ "github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -25,6 +26,7 @@ func init() {
 		panic("failed to connect database")
 	}
 	db = dbConnection
+	db.AutoMigrate(&Table.Role{}, &Table.UserInfo{}, &Table.UserCredential{})
 
 }
 
