@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gotired/golang_backend/database"
 	"github.com/gotired/golang_backend/models"
+	"github.com/gotired/golang_backend/services"
 	user_credential_service "github.com/gotired/golang_backend/services/user_credential"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -60,6 +61,5 @@ func (u *UserStruct) Login(c *fiber.Ctx) error {
 			Failure{}.Detail(err.Error(), "handlers/user/Login"))
 	}
 
-	// Passwords match, login successful
-	return c.SendString("Login successful!")
+	return c.JSON(Success{}.Detail("Login successful!"))
 }

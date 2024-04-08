@@ -4,44 +4,41 @@ import (
 	"github.com/gotired/golang_backend/models"
 )
 
-type Success struct{}
+type Success struct {
+}
 
 func (s Success) Detail(details string) models.DetailSchema {
-	response := models.DetailSchema{
+	return models.DetailSchema{
 		Status:   "success",
 		Detail:   details,
 		Location: nil,
 	}
-	return response
 }
 
 func (s Success) Data(data any) models.DataSchema {
-	response := models.DataSchema{
+	return models.DataSchema{
 		Status: "success",
 		Data:   data,
 	}
-	return response
 }
 
 type Failure struct{}
 
-func (s Failure) Detail(details, location string) models.DetailSchema {
-	var locPtr *string
+func (s Failure) Detail(details string, location string) models.DetailSchema {
+	var loc *string
 	if location != "" {
-		locPtr = &location
+		loc = &location
 	}
-	response := models.DetailSchema{
+	return models.DetailSchema{
 		Status:   "failure",
 		Detail:   details,
-		Location: locPtr,
+		Location: loc,
 	}
-	return response
 }
 
 func (s Failure) Data(data any) models.DataSchema {
-	response := models.DataSchema{
+	return models.DataSchema{
 		Status: "failure",
 		Data:   data,
 	}
-	return response
 }
