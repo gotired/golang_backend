@@ -20,6 +20,7 @@ func main() {
 	app.Use(utils.LogRequest)
 
 	routes.SetupUserRoutes(app)
+	routes.SetupRoleRoutes(app)
 
 	app.Listen(":" + strconv.Itoa(cfg.APPPort))
 }
