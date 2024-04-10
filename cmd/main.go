@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gotired/golang_backend/config"
 	"github.com/gotired/golang_backend/routes"
+	"github.com/gotired/golang_backend/utils"
 )
 
 func main() {
@@ -16,6 +17,7 @@ func main() {
 	}
 
 	app := fiber.New()
+	app.Use(utils.LogRequest)
 
 	routes.SetupUserRoutes(app)
 
