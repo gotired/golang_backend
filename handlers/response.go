@@ -31,7 +31,7 @@ func (s Failure) Detail(details string, location string) models.DetailSchema {
 	if location != "" {
 		loc = &location
 	}
-	log.Fatalf("Error details : %s", details)
+	log.Printf("Error details : %s", details)
 	return models.DetailSchema{
 		Status:   "failure",
 		Detail:   details,
@@ -40,7 +40,7 @@ func (s Failure) Detail(details string, location string) models.DetailSchema {
 }
 
 func (s Failure) Data(data any) models.DataSchema {
-	log.Fatalf("Error data : %s", data)
+	log.Printf("Error data : %s", data)
 	return models.DataSchema{
 		Status: "failure",
 		Data:   data,
