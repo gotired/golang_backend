@@ -17,6 +17,7 @@ type UserRegister struct {
 	Username string `json:"user_name" validate:"required"`
 	Password string `json:"password" validate:"required,min=6"`
 	Confirm  string `json:"confirm" validate:"required,eqfield=Password"`
+	Role     string `json:"role" validate:"required,uuid"`
 }
 
 type UserLogin struct {
