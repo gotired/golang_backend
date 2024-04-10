@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gotired/golang_backend/database"
 	"github.com/gotired/golang_backend/models/table"
-	role_service "github.com/gotired/golang_backend/services/role"
+	roleService "github.com/gotired/golang_backend/services/role"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -15,17 +15,20 @@ import (
 func Validate(Identifier string, password string) (*uuid.UUID, error) {
 	db := database.GetDB()
 
-	var user_credential table.UserCredential
-	if err := db.Where("user_name = ? OR email = ?", Identifier, Identifier).First(&user_credential).Error; err != nil {
+	var userCredential table.UserCredential
+	if err := db.Where("user_name = ? OR email = ?", Identifier, Identifier).First(&userCredential).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
 		return nil, err
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user_credential.Password), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(userCredential.Password), []byte(password)); err != nil {
 		return nil, err
 	}
-	return &user_credential.ID, nil
+	return &userCredential.ID, nil
 }
 
-func Register(email string, username string, role string, password string) (*uuid.UUID, error) {
+func Insert(email string, username string, role string, password string) (*uuid.UUID, error) {
 	db := database.GetDB()
 
 	var existingUser table.UserCredential
@@ -35,7 +38,7 @@ func Register(email string, username string, role string, password string) (*uui
 		return nil, err
 	}
 
-	err := role_service.Validate(role)
+	err := roleService.Validate(role)
 	if err != nil {
 		return nil, err
 	}

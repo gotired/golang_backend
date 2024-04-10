@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gotired/golang_backend/models"
 	"github.com/gotired/golang_backend/models/table"
-	user_credential_service "github.com/gotired/golang_backend/services/user_credential"
-	user_info_service "github.com/gotired/golang_backend/services/user_info"
+	userCredentialService "github.com/gotired/golang_backend/services/user_credential"
+	userInfoService "github.com/gotired/golang_backend/services/user_info"
 	"github.com/gotired/golang_backend/utils"
 )
 
@@ -15,7 +15,7 @@ type UserStruct struct {
 }
 
 func (u *UserStruct) List(c *fiber.Ctx) error {
-	users, err := user_info_service.Get()
+	users, err := userInfoService.Get()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/List"))
@@ -38,12 +38,19 @@ func (u *UserStruct) Register(c *fiber.Ctx) error {
 			Failure{}.Detail("Mismatch Password and Confirm password", "handlers/user/Register"))
 	}
 
-	user_id, err := user_credential_service.Register(requestBody.Email, requestBody.Username, requestBody.Username, requestBody.Password)
+	userID, err := userCredentialService.Insert(requestBody.Email, requestBody.Username, requestBody.Role, requestBody.Password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/Register"))
 	}
-	return c.JSON(Success{}.Detail("User registered successfully! " + (*user_id).String()))
+
+	err = userInfoService.Insert(*userID, requestBody.FirstName, requestBody.LastName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(
+			Failure{}.Detail(err.Error(), "handlers/user/Register"))
+	}
+
+	return c.JSON(Success{}.Detail("User registered successfully! "))
 }
 
 func (u *UserStruct) Login(c *fiber.Ctx) error {
@@ -52,17 +59,17 @@ func (u *UserStruct) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	user_id, err := user_credential_service.Validate(loginData.Identifier, loginData.Password)
+	userID, err := userCredentialService.Validate(loginData.Identifier, loginData.Password)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/Login"))
 	}
-	accessToken, err := utils.GenerateJWT((*user_id).String(), time.Minute*15)
+	accessToken, err := utils.GenerateJWT((*userID).String(), time.Minute*15)
 	if err != nil {
 		return err
 	}
 
-	refreshToken, err := utils.GenerateJWT((*user_id).String(), time.Hour)
+	refreshToken, err := utils.GenerateJWT((*userID).String(), time.Hour)
 	if err != nil {
 		return err
 	}
