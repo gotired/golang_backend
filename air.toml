@@ -1,0 +1,7 @@
+# air.toml
+
+root = "."   # Set the root directory of your project
+build = "go build -o ./tmp/main ./cmd"  # Command to build your application in the cmd directory
+cmd = "./tmp/main"  # Command to run your application after building
+port = 8080   # Port where Air will run
+log = "debug"   # Log level (optional)
