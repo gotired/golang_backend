@@ -35,6 +35,11 @@ func init() {
 		panic("failed to connect database")
 	}
 	db = dbConnection
+
+	if err := db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error; err != nil {
+		log.Fatalf("Error enabling uuid-ossp extension: %v", err)
+	}
+
 	db.AutoMigrate(&Table.Role{}, &Table.UserInfo{}, &Table.UserCredential{})
 
 }
