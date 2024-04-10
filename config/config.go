@@ -28,12 +28,13 @@ func Load() (models.Config, error) {
 	}
 
 	return models.Config{
-		DBUsername: getEnv("DB_USERNAME", ""),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     dbPort,
-		DBName:     getEnv("DB_NAME", ""),
-		APPPort:    appPort,
+		DBUsername:   getEnv("DB_USERNAME", ""),
+		DBPassword:   getEnv("DB_PASSWORD", ""),
+		DBHost:       getEnv("DB_HOST", "localhost"),
+		DBPort:       dbPort,
+		DBName:       getEnv("DB_NAME", ""),
+		APPPort:      appPort,
+		JWTSecretKey: getEnv("JWT_SECRET_KEY", ""),
 	}, nil
 }
 
