@@ -1,26 +1,29 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/gotired/golang_backend/database"
 	"github.com/gotired/golang_backend/models"
-	"github.com/gotired/golang_backend/services"
+	"github.com/gotired/golang_backend/models/table"
 	user_credential_service "github.com/gotired/golang_backend/services/user_credential"
-	"golang.org/x/crypto/bcrypt"
+	user_info_service "github.com/gotired/golang_backend/services/user_info"
+	"github.com/gotired/golang_backend/utils"
 )
 
 type UserStruct struct {
 }
 
 func (u *UserStruct) List(c *fiber.Ctx) error {
-	users, err := services.GetAllUsers()
+	users, err := user_info_service.Get()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/List"))
 	}
 	if users == nil {
-		users = make([]models.UserDetail, 0)
+		users = make([]table.UserInfo, 0)
 	}
+
 	return c.JSON(Success{}.Data(users))
 }
 
@@ -49,17 +52,23 @@ func (u *UserStruct) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	db := database.GetDB()
-
-	var user models.UserRegister
-	if err := db.Where("user_name = ? OR email = ?", loginData.Identifier, loginData.Identifier).First(&user).Error; err != nil {
+	user_id, err := user_credential_service.Validate(loginData.Identifier, loginData.Password)
+	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/Login"))
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(
-			Failure{}.Detail(err.Error(), "handlers/user/Login"))
+	accessToken, err := utils.GenerateJWT((*user_id).String(), time.Minute*15)
+	if err != nil {
+		return err
 	}
 
-	return c.JSON(Success{}.Detail("Login successful!"))
+	refreshToken, err := utils.GenerateJWT((*user_id).String(), time.Hour)
+	if err != nil {
+		return err
+	}
+	response := make(map[string]string)
+	response["access_token"] = accessToken
+	response["refresh_token"] = refreshToken
+
+	return c.JSON(Success{}.Data(response))
 }
