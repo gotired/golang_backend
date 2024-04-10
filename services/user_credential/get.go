@@ -12,17 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
-func Validate(Identifier string, password string) error {
+func Validate(Identifier string, password string) (*uuid.UUID, error) {
 	db := database.GetDB()
 
 	var user_credential table.UserCredential
 	if err := db.Where("user_name = ? OR email = ?", Identifier, Identifier).First(&user_credential).Error; err != nil {
-		return err
+		return nil, err
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user_credential.Password), []byte(password)); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &user_credential.ID, nil
 }
 
 func Register(email string, username string, role string, password string) (*uuid.UUID, error) {
