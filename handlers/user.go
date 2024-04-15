@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gotired/golang_backend/models"
 	"github.com/gotired/golang_backend/models/table"
+	"github.com/gotired/golang_backend/models/user"
 	userCredentialService "github.com/gotired/golang_backend/services/user_credential"
 	userInfoService "github.com/gotired/golang_backend/services/user_info"
 	"github.com/gotired/golang_backend/utils"
@@ -28,7 +28,7 @@ func (u *UserStruct) List(c *fiber.Ctx) error {
 }
 
 func (u *UserStruct) Register(c *fiber.Ctx) error {
-	var requestBody models.UserRegister
+	var requestBody user.UserRegister
 	if err := c.BodyParser(&requestBody); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(
 			Failure{}.Detail(err.Error(), "handlers/user/Register"))
@@ -54,7 +54,7 @@ func (u *UserStruct) Register(c *fiber.Ctx) error {
 }
 
 func (u *UserStruct) Login(c *fiber.Ctx) error {
-	var loginData models.UserLogin
+	var loginData user.UserLogin
 	if err := c.BodyParser(&loginData); err != nil {
 		return err
 	}
