@@ -1,12 +1,23 @@
-FROM postgres:latest
+FROM golang:1.22.2-alpine AS build
 
-RUN echo "CREATE TABLE IF NOT EXISTS users (\
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\
-    email VARCHAR(255) UNIQUE,\
-    user_name VARCHAR(255) UNIQUE,\
-    first_name VARCHAR(255),\
-    last_name VARCHAR(255),\
-    phone VARCHAR(20) UNIQUE,\
-    password VARCHAR(255)\
-    );" > /docker-entrypoint-initdb.d/init.sql
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
 
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN go build -o main ./cmd
+
+FROM scratch
+
+COPY --from=build /app/main /app/main
+COPY --from=build /app/.env /.env
+
+CMD ["/app/main"]
